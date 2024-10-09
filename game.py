@@ -1,51 +1,40 @@
-from direct.showbase.ShowBase import ShowBase
 import complexpbr
-from panda3d.core import DirectionalLight, AmbientLight, LVector3
-from direct.filter.CommonFilters import CommonFilters
-from panda3d.core import PointLight, Vec3, Vec4
 import light
+from blackhole import Blackhole
+from space import Space
 
-class Game(ShowBase):
-    def __init__(self):
-        super().__init__()
-
+class Game:
+    def __init__(self, base):
+        self.base = base  # Use the existing base (ShowBase instance)
+        self.clear_screen()
         light.light()
-
-        self.blackhole = self.loader.load_model("./assets/blackhole/scene.bam")
-        self.blackhole.reparent_to(base.render)
-        self.blackhole.set_pos(0, 0, 0) 
-
-        self.camera.set_pos(0, -10, 0)  # 카메라를 모델 뒤쪽으로 이동
-        
-        env_light_1 = PointLight('env_light_1')
-        env_light_1.set_color(Vec4(Vec3(6),1))
-        env_light_1 = base.render.attach_new_node(env_light_1)
-        env_light_1.set_pos(0,0,0)
-
-        self.space = self.loader.load_model("./assets/space/space.bam")
-        self.space.reparent_to(base.render)
-        self.space.set_pos(0, 0, 0)
-        self.space.set_scale(0.5)
-        self.space.set_light(env_light_1)
-
+        """
+        LVecBase3f(-88.8101, -3.51555, -0.286794)
+        LPoint3f(-57.7809, 10.4978, 2.57525)
+        """
         # complex PBR 셰이더 적용
-        complexpbr.apply_shader(self.render)
+        complexpbr.apply_shader(self.base.render)
 
         # 화면 공간 효과 초기화
         complexpbr.screenspace_init()
-        complexpbr.apply_shader(self.render, intensity=0.9, env_cam_pos=None, env_res=256)
-       
+        complexpbr.apply_shader(self.base.render, intensity=0.9, env_cam_pos=None, env_res=256)
 
         # 블룸 효과 설정
-        screen_quad = base.screen_quad
+        screen_quad = self.base.screen_quad
         screen_quad.set_shader_input("bloom_intensity", 2.0)
 
-        self.task_mgr.add(self.rotate_blackhole)
+        ################################################################
 
-    def rotate_blackhole(self, task):
-        # 매 프레임마다 모델을 회전
-        self.blackhole.set_h(self.blackhole.get_h() + 1)  # 1도씩 회전
-        return task.cont  # 계속해서 작업을 수행
+        base.camera.set_pos(-57.7809, 10.4978, 2.57525)
+        base.camera.set_hpr(-88.8101, -3.51555, -0.286794)
 
-app = Game()
-app.run()
+        blackhole = Blackhole(base=base)
+        blackhole.show(0, 0, 0)
+
+        space = Space(base=base)
+        space.show(0, 0, 0, 0.5)
+
+    def clear_screen(self):
+        """현재 화면에 있는 모든 GUI 요소를 제거"""
+        for child in self.base.aspect2d.getChildren():
+            child.removeNode()
