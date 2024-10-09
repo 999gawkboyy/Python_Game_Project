@@ -1,13 +1,18 @@
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.DirectGui import DirectLabel, DirectButton
+from panda3d.core import WindowProperties
 from game import Game
+
 
 class MyApp(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
-        self.create_screen_1()
+        self.main_page()
+        props = WindowProperties() 
+        props.setSize(1920, 1080) 
 
-    def create_screen_1(self):
+        self.win.requestProperties(props) 
+    def main_page(self):
         """첫 번째 화면 생성"""
         self.clear_screen()
 
